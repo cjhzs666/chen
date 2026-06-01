@@ -401,11 +401,38 @@ body{
     </div>
 </div>
 
-<!-- ========== 历史 Tab ========== -->
-<div class="tab-content" id="tabHistory">
-    <div class="hist-header">历史记录</div>
-    <div id="historyList"></div>
-    <div id="historyEmpty" class="hist-empty">还没有历史记录</div>
+<!-- ========== 用户 Tab ========== -->
+<div class="tab-content" id="tabUser">
+    <!-- 用户信息卡片 -->
+    <div class="card" style="text-align:center;padding:24px 20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;margin:0 auto 10px;" id="userAvatar">U</div>
+        <div style="font-size:1.15rem;font-weight:700;" id="userDisplayName"></div>
+        <button class="btn btn-ghost" style="margin-top:8px;" id="switchUserFromTab">切换用户</button>
+    </div>
+
+    <!-- 身体数据 -->
+    <div class="card" id="profileCard">
+        <div class="card-header">身体数据</div>
+        <div id="profileInfo" style="font-size:.9rem;color:var(--text2);">
+            <div style="text-align:center;padding:16px;color:var(--text3);">未评估</div>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:8px;" id="reAssessBtn">身体评估</button>
+    </div>
+
+    <!-- 每日目标 -->
+    <div class="card">
+        <div class="card-header">每日卡路里目标</div>
+        <div style="text-align:center;font-size:1.6rem;font-weight:800;color:var(--primary);" id="userGoalDisplay">2000</div>
+        <div style="text-align:center;font-size:.8rem;color:var(--text3);">kcal / 天</div>
+        <button class="btn btn-ghost" style="margin-top:8px;" id="editGoalFromUser">修改目标</button>
+    </div>
+
+    <!-- 历史记录（小模块） -->
+    <div class="card">
+        <div class="card-header">历史记录</div>
+        <div id="historyListMini"></div>
+        <div id="historyEmptyMini" style="text-align:center;padding:20px;color:var(--text3);font-size:.88rem;">还没有历史记录</div>
+    </div>
 </div>
 
 <!-- ========== 底部 Tab 栏 ========== -->
@@ -417,11 +444,11 @@ body{
         <span class="tab-label">今日</span>
         <span class="tab-dot"></span>
     </button>
-    <button class="tab-item" data-tab="tabHistory">
+    <button class="tab-item" data-tab="tabUser">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-            <rect x="2" y="2" width="16" height="16" rx="2"/><path d="M2 12h16"/><path d="M14 2v3"/><path d="M6 2v3"/>
+            <circle cx="10" cy="7" r="3.5"/><path d="M3 17v-1.5a5 5 0 015-5h4a5 5 0 015 5V17"/>
         </svg>
-        <span class="tab-label">历史</span>
+        <span class="tab-label">用户</span>
         <span class="tab-dot"></span>
     </button>
 </nav>
@@ -496,7 +523,8 @@ body{
             <span class="goal-unit">kcal</span>
         </div>
         <button id="saveGoalBtn" class="btn btn-primary">保存目标</button>
-        <button id="closeGoalModalBtn" class="btn btn-ghost" style="margin-top:8px;">取消</button>
+        <button id="reopenProfileBtn" class="btn btn-ghost" style="margin-top:8px;">重新身体评估</button>
+        <button id="closeGoalModalBtn" class="btn btn-ghost" style="margin-top:4px;">取消</button>
     </div>
 </div>
 
@@ -652,7 +680,10 @@ const D={
     navAvatar:$('navAvatar'),navUserName:$('navUserName'),
     todayHeading:$('todayHeading'),ringProgress:$('ringProgress'),ringCurrent:$('ringCurrent'),
     ringTarget:$('ringTarget'),ringRemaining:$('ringRemaining'),macroBars:$('macroBars'),
-    todayFoodList:$('todayFoodList'),historyList:$('historyList'),historyEmpty:$('historyEmpty'),
+    todayFoodList:$('todayFoodList'),
+    historyListMini:$('historyListMini'),historyEmptyMini:$('historyEmptyMini'),
+    userAvatar:$('userAvatar'),userDisplayName:$('userDisplayName'),userGoalDisplay:$('userGoalDisplay'),
+    profileInfo:$('profileInfo'),
     addSheet:$('addSheet'),foodSearch:$('foodSearch'),foodDropdown:$('foodDropdown'),
     categoryChips:$('categoryChips'),weightInput:$('weightInput'),
     nutPreview:$('nutPreview'),nutKcal:$('nutKcal'),nutDesc:$('nutDesc'),
@@ -704,7 +735,7 @@ function switchTab(id){
     $(id).classList.add('active');
     document.querySelector(`[data-tab="${id}"]`).classList.add('active');
     if(id==='tabToday')renderToday();
-    if(id==='tabHistory')renderHistory();
+    if(id==='tabUser')renderUserTab();
 }
 document.querySelectorAll('.tab-item').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
@@ -787,7 +818,14 @@ function confirmAdd(){
 function delRec(id){if(!confirm('删除这条记录？'))return;records=records.filter(r=>r.id!==id);saveRec(currUser,records);renderAll();}
 
 // ========== 渲染 ==========
-function renderAll(){renderToday();renderHistory();}
+function renderAll(){
+    renderToday();renderHistoryMini();
+    if(currUser){
+        D.userDisplayName.textContent=currUser;
+        D.userAvatar.textContent=currUser[0].toUpperCase();
+        D.userGoalDisplay.textContent=getGoal(currUser);
+    }
+}
 function renderToday(){
     const td=today();D.todayHeading.textContent=dateLabel(td);
     const tr=records.filter(r=>r.date===td);
@@ -842,13 +880,13 @@ function renderToday(){
     D.ringProgress.parentElement.parentElement.style.cursor='pointer';
     D.ringProgress.parentElement.parentElement.onclick=openGoalModal;
 }
-function renderHistory(){
+function renderHistoryMini(){
     const td=today();const g={};
     records.forEach(r=>{if(r.date===td)return;if(!g[r.date])g[r.date]=[];g[r.date].push(r);});
     const dates=Object.keys(g).sort().reverse();
-    if(!dates.length){D.historyEmpty.classList.remove('hidden');D.historyList.innerHTML='';return;}
-    D.historyEmpty.classList.add('hidden');
-    D.historyList.innerHTML=dates.map(d=>{
+    if(!dates.length){D.historyEmptyMini.classList.remove('hidden');D.historyListMini.innerHTML='';return;}
+    D.historyEmptyMini.classList.add('hidden');
+    D.historyListMini.innerHTML=dates.slice(0,30).map(d=>{
         const rs=g[d];const tk=rs.reduce((s,r)=>s+r.kcal,0);
         return`<div class="hist-day">
             <div class="hist-day-hd" onclick="this.parentElement.classList.toggle('open')">
@@ -858,6 +896,27 @@ function renderHistory(){
             <div class="hist-day-bd">${rs.map(r=>`<div class="hist-row"><span class="hi-time">${r.time}</span><span class="hi-name">${r.foodName}</span><span class="hi-w">${r.weight}g</span><span class="hi-k">${r.kcal} kcal</span></div>`).join('')}</div>
         </div>`;
     }).join('');
+}
+
+function renderUserTab(){
+    if(!currUser)return;
+    D.userAvatar.textContent=currUser[0].toUpperCase();
+    D.userDisplayName.textContent=currUser;
+    D.userGoalDisplay.textContent=getGoal(currUser);
+    const p=getProfile(currUser);
+    if(p){
+        const actLabels={sedentary:'久坐不动',light:'轻度活动',moderate:'中度活动',active:'高度活动',very_active:'极高活动'};
+        const goalLabels={lose:'减脂',maintain:'保持健康',gain:'增肌'};
+        D.profileInfo.innerHTML=`
+            <div style="display:flex;justify-content:center;gap:20px;margin-bottom:4px;">
+                <span>${p.gender==='male'?'男':'女'} · ${p.age||'?'}岁</span>
+                <span>${p.height||'?'}cm · ${p.weight||'?'}kg</span>
+            </div>
+            <div style="text-align:center;color:var(--text3);font-size:.82rem;">${actLabels[p.activity]||''} · ${goalLabels[p.goal]||''}</div>`;
+    }else{
+        D.profileInfo.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);">未评估 · 点击下方开始</div>';
+    }
+    renderHistoryMini();
 }
 
 // ========== 弹窗 ==========
@@ -887,6 +946,13 @@ $('userModal').addEventListener('click',e=>{if(e.target===$('userModal'))closeUs
 $('createUserBtn').addEventListener('click',createUser);
 $('newUserName').addEventListener('keydown',e=>{if(e.key==='Enter')createUser();});
 
+$('switchUserFromTab').addEventListener('click',openUserModal);
+$('reAssessBtn').addEventListener('click',()=>openProfileModal(getProfile(currUser)));
+$('editGoalFromUser').addEventListener('click',()=>{
+    if(!getProfile(currUser)){openProfileModal();return;}
+    openGoalModal();
+});
+
 $('openSheetBtn').addEventListener('click',openSheet);
 $('addSheet').addEventListener('click',e=>{if(e.target===$('addSheet'))closeSheet();});
 $('confirmAddBtn').addEventListener('click',confirmAdd);
@@ -895,6 +961,7 @@ $('goalModal').addEventListener('click',e=>{if(e.target===$('goalModal'))closeGo
 $('closeGoalModalBtn').addEventListener('click',closeGoalModal);
 $('saveGoalBtn').addEventListener('click',saveGoal);
 $('goalInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveGoal();});
+$('reopenProfileBtn').addEventListener('click',()=>{closeGoalModal();setTimeout(()=>openProfileModal(getProfile(currUser)),300);});
 
 D.foodSearch.addEventListener('focus',()=>renderDropdown(D.foodSearch.value));
 D.foodSearch.addEventListener('input',()=>{selFood=null;hideNutPreview();renderDropdown(D.foodSearch.value);});
@@ -908,14 +975,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('userModal').
 // ========== 身体评估 ==========
 let profileGender='male',profileActivity='sedentary',profileGoal='lose';
 
-function openProfileModal(){
+function openProfileModal(existing){
+    existing=existing||null;
     D.profileModal.classList.remove('hidden');
-    D.pfAge.value='';D.pfHeight.value='';D.pfWeight.value='';
     D.setupResult.classList.remove('show');
-    profileGender='male';profileActivity='sedentary';profileGoal='lose';
-    document.querySelectorAll('#genderToggle .gender-opt').forEach((b,i)=>{b.classList.toggle('active',i===0);});
-    document.querySelectorAll('#activityChips .goal-chip').forEach((b,i)=>{b.classList.toggle('active',i===0);});
-    document.querySelectorAll('#goalChips .goal-chip').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    if(existing){
+        D.pfAge.value=existing.age||'';D.pfHeight.value=existing.height||'';D.pfWeight.value=existing.weight||'';
+        profileGender=existing.gender||'male';profileActivity=existing.activity||'sedentary';profileGoal=existing.goal||'lose';
+    }else{
+        D.pfAge.value='';D.pfHeight.value='';D.pfWeight.value='';
+        profileGender='male';profileActivity='sedentary';profileGoal='lose';
+    }
+    document.querySelectorAll('#genderToggle .gender-opt').forEach(b=>{b.classList.toggle('active',b.dataset.g===profileGender);});
+    document.querySelectorAll('#activityChips .goal-chip').forEach(b=>{b.classList.toggle('active',b.dataset.act===profileActivity);});
+    document.querySelectorAll('#goalChips .goal-chip').forEach(b=>{b.classList.toggle('active',b.dataset.gl===profileGoal);});
+    if(existing){calcTDEE();}
     D.pfAge.focus();
 }
 function closeProfileModal(){D.profileModal.classList.add('hidden');}
