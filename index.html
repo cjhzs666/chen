@@ -714,8 +714,7 @@ function renderToday(){
     if(rem>0){D.ringRemaining.textContent='还差 '+Math.round(rem)+' kcal';D.ringRemaining.classList.remove('over');}
     else{D.ringRemaining.textContent='已超出 '+Math.round(-rem)+' kcal';D.ringRemaining.classList.add('over');}
 
-    // 营养素条 — 按每日目标显示进度
-    const goal=getGoal(currUser);
+    // 营养素条 — 按每日目标显示进度（上面已获取 goal）
     // 按标准饮食比例推算每日宏量目标：碳水55% 蛋白质18% 脂肪27%
     const goalCarbs=Math.round(goal*0.55/4);
     const goalProtein=Math.round(goal*0.18/4);
