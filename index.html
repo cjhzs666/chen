@@ -301,6 +301,42 @@ body{
 .btn-primary{background:var(--primary);color:#fff}
 .btn-ghost{background:var(--fill);color:var(--text);padding:10px 16px;font-size:.88rem;width:auto;margin:0 auto;border-radius:20px}
 
+/* ========== 身体评估表单 ========== */
+.setup-section{margin-bottom:14px}
+.setup-label{font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.gender-toggle{display:flex;gap:8px}
+.gender-opt{
+    flex:1;padding:11px;border:2px solid var(--sep);border-radius:var(--radius-xs);
+    text-align:center;cursor:pointer;font-size:.92rem;font-family:inherit;font-weight:600;
+    background:var(--card);color:var(--text2);transition:all .2s;
+}
+.gender-opt.active{border-color:var(--primary);color:var(--primary);background:rgba(52,199,89,.04)}
+.setup-input-row{display:flex;gap:8px}
+.setup-input-row input{
+    flex:1;padding:11px 12px;border:2px solid var(--sep);border-radius:var(--radius-xs);
+    font-size:.95rem;font-family:inherit;text-align:center;font-weight:500;
+    -webkit-appearance:none;color:var(--text);
+}
+.setup-input-row input:focus{outline:none;border-color:var(--primary)}
+.setup-input-row .unit{display:flex;align-items:center;font-size:.85rem;color:var(--text2);font-weight:500;width:28px;justify-content:center}
+.goal-chips{display:flex;gap:8px}
+.goal-chip{
+    flex:1;padding:12px 8px;border:2px solid var(--sep);border-radius:var(--radius-xs);
+    text-align:center;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:600;
+    background:var(--card);color:var(--text2);transition:all .2s;
+}
+.goal-chip.active{border-color:var(--primary);color:var(--primary);background:rgba(52,199,89,.04)}
+.goal-chip .emoji{font-size:1.3rem;display:block;margin-bottom:2px}
+.setup-result{
+    text-align:center;padding:16px;border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,#F2FFF5,#E8FFEE);margin-bottom:12px;display:none;
+}
+.setup-result.show{display:block}
+.setup-result .rec-kcal{font-size:2rem;font-weight:800;color:var(--primary);line-height:1}
+.setup-result .rec-label{font-size:.82rem;color:var(--text2);margin-top:4px}
+.setup-result .rec-detail{font-size:.78rem;color:var(--text3);margin-top:2px}
+.skip-link{text-align:center;padding:8px;color:var(--text3);font-size:.82rem;cursor:pointer;text-decoration:underline}
+
 /* Toast */
 .toast{
     position:fixed;bottom:120px;left:50%;transform:translateX(-50%);
@@ -463,6 +499,57 @@ body{
     </div>
 </div>
 
+<!-- ========== 身体评估弹窗 ========== -->
+<div id="profileModal" class="modal-overlay hidden">
+    <div class="modal-sheet">
+        <div class="handle"></div>
+        <h3>身体评估</h3>
+        <p style="text-align:center;font-size:.85rem;color:var(--text2);margin-bottom:14px;">帮你计算每日推荐卡路里</p>
+
+        <div class="setup-section">
+            <span class="setup-label">性别</span>
+            <div class="gender-toggle" id="genderToggle">
+                <button class="gender-opt active" data-g="male">男</button>
+                <button class="gender-opt" data-g="female">女</button>
+            </div>
+        </div>
+
+        <div class="setup-input-row" style="margin-bottom:10px;">
+            <div style="flex:1"><span class="setup-label">年龄</span><input type="number" id="pfAge" placeholder="25" min="10" max="100"></div>
+            <div style="flex:1"><span class="setup-label">身高 cm</span><input type="number" id="pfHeight" placeholder="170" min="100" max="250"></div>
+            <div style="flex:1"><span class="setup-label">体重 kg</span><input type="number" id="pfWeight" placeholder="65" min="30" max="200"></div>
+        </div>
+
+        <div class="setup-section">
+            <span class="setup-label">活动水平</span>
+            <div class="goal-chips" id="activityChips">
+                <button class="goal-chip active" data-act="sedentary">久坐<br><span style="font-size:.7rem;color:var(--text3);">几乎不运动</span></button>
+                <button class="goal-chip" data-act="light">轻度<br><span style="font-size:.7rem;color:var(--text3);">每周1-3次</span></button>
+                <button class="goal-chip" data-act="moderate">中度<br><span style="font-size:.7rem;color:var(--text3);">每周3-5次</span></button>
+                <button class="goal-chip" data-act="active">高度<br><span style="font-size:.7rem;color:var(--text3);">每周6-7次</span></button>
+            </div>
+        </div>
+
+        <div class="setup-section">
+            <span class="setup-label">你的目标</span>
+            <div class="goal-chips" id="goalChips">
+                <button class="goal-chip active" data-gl="lose"><span class="emoji">🔥</span>减脂</button>
+                <button class="goal-chip" data-gl="maintain"><span class="emoji">💚</span>保持健康</button>
+                <button class="goal-chip" data-gl="gain"><span class="emoji">💪</span>增肌</button>
+            </div>
+        </div>
+
+        <div class="setup-result" id="setupResult">
+            <div class="rec-kcal" id="recKcal">0</div>
+            <div class="rec-label">kcal / 天</div>
+            <div class="rec-detail" id="recDetail"></div>
+        </div>
+
+        <button class="btn btn-primary" id="saveProfileBtn">保存并开始使用</button>
+        <div class="skip-link" id="skipProfile">跳过，使用默认值</div>
+    </div>
+</div>
+
 <div id="toast" class="toast hidden"></div>
 
 <script>
@@ -545,6 +632,8 @@ function getRec(u){try{return JSON.parse(localStorage.getItem(SK+'rec_'+u))||[]}
 function saveRec(u,r){localStorage.setItem(SK+'rec_'+u,JSON.stringify(r))}
 function getGoal(u){const g=parseInt(localStorage.getItem(SK+'goal_'+u));return(g&&g>0)?g:2000}
 function saveGoal(u,g){localStorage.setItem(SK+'goal_'+u,g)}
+function getProfile(u){try{return JSON.parse(localStorage.getItem(SK+'prof_'+u))||null}catch{return null}}
+function saveProfile(u,p){localStorage.setItem(SK+'prof_'+u,JSON.stringify(p))}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function nowTime(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
@@ -570,6 +659,8 @@ const D={
     confirmAddBtn:$('confirmAddBtn'),
     userModal:$('userModal'),userList:$('userList'),newUserName:$('newUserName'),
     goalModal:$('goalModal'),goalInput:$('goalInput'),toast:$('toast'),
+    profileModal:$('profileModal'),pfAge:$('pfAge'),pfHeight:$('pfHeight'),pfWeight:$('pfWeight'),
+    recKcal:$('recKcal'),recDetail:$('recDetail'),setupResult:$('setupResult'),
 };
 
 // ========== Toast ==========
@@ -592,12 +683,15 @@ function switchUser(n){currUser=n;setCurr(n);updateUserUI();loadRec();renderAll(
 function createUser(){
     const n=D.newUserName.value.trim();if(!n){toast('请输入用户名');return;}
     const u=getUsers();if(u.includes(n)){toast('该用户已存在');return;}
-    u.push(n);saveUsers(u);D.newUserName.value='';switchUser(n);renderUserModal();
+    u.push(n);saveUsers(u);D.newUserName.value='';
+    switchUser(n);renderUserModal();closeUserModal();
+    // 新用户打开身体评估
+    setTimeout(()=>openProfileModal(),350);
 }
 function deleteUser(n){
     if(!confirm('确定删除「'+n+'」及所有记录？'))return;
     let u=getUsers().filter(x=>x!==n);saveUsers(u);
-    localStorage.removeItem(SK+'rec_'+n);localStorage.removeItem(SK+'goal_'+n);
+    localStorage.removeItem(SK+'rec_'+n);localStorage.removeItem(SK+'goal_'+n);localStorage.removeItem(SK+'prof_'+n);
     if(currUser===n){if(u.length){currUser=u[0];setCurr(currUser);updateUserUI();loadRec();}else{currUser='';setCurr('');initUser();}}
     renderUserModal();renderAll();
 }
@@ -805,7 +899,75 @@ D.weightInput.addEventListener('input',calcNut);
 D.weightInput.addEventListener('keydown',e=>{if(e.key==='Enter')confirmAdd();});
 document.querySelectorAll('.wt-preset').forEach(b=>b.addEventListener('click',()=>{D.weightInput.value=b.dataset.w;calcNut();}));
 document.addEventListener('click',e=>{if(!D.foodSearch.contains(e.target)&&!D.foodDropdown.contains(e.target))D.foodDropdown.classList.remove('show');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('userModal').classList.contains('hidden'))closeUserModal();if(!$('goalModal').classList.contains('hidden'))closeGoalModal();if(!$('addSheet').classList.contains('hidden'))closeSheet();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('userModal').classList.contains('hidden'))closeUserModal();if(!$('goalModal').classList.contains('hidden'))closeGoalModal();if(!$('addSheet').classList.contains('hidden'))closeSheet();if(!$('profileModal').classList.contains('hidden'))closeProfileModal();}});
+
+// ========== 身体评估 ==========
+let profileGender='male',profileActivity='sedentary',profileGoal='lose';
+
+function openProfileModal(){
+    D.profileModal.classList.remove('hidden');
+    D.pfAge.value='';D.pfHeight.value='';D.pfWeight.value='';
+    D.setupResult.classList.remove('show');
+    profileGender='male';profileActivity='sedentary';profileGoal='lose';
+    document.querySelectorAll('#genderToggle .gender-opt').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    document.querySelectorAll('#activityChips .goal-chip').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    document.querySelectorAll('#goalChips .goal-chip').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    D.pfAge.focus();
+}
+function closeProfileModal(){D.profileModal.classList.add('hidden');}
+
+function calcTDEE(){
+    const age=parseInt(D.pfAge.value),height=parseInt(D.pfHeight.value),weight=parseInt(D.pfWeight.value);
+    if(!age||!height||!weight||age<10||height<100||weight<30)return;
+    // Mifflin-St Jeor 公式
+    let bmr=10*weight+6.25*height-5*age;
+    bmr+=(profileGender==='male')?5:-161;
+    const actFactors={sedentary:1.2,light:1.375,moderate:1.55,active:1.725,very_active:1.9};
+    const tdee=Math.round(bmr*(actFactors[profileActivity]||1.2));
+    // 目标调整
+    const adj={lose:-500,maintain:0,gain:300};
+    const rec=Math.max(tdee+(adj[profileGoal]||0),1200);
+    const goalLabels={lose:'减脂',maintain:'保持健康',gain:'增肌'};
+    const actLabels={sedentary:'久坐',light:'轻度活动',moderate:'中度活动',active:'高度活动',very_active:'极高活动'};
+
+    D.recKcal.textContent=rec;
+    D.recDetail.textContent='TDEE '+tdee+' kcal · '+goalLabels[profileGoal]+' · '+actLabels[profileActivity];
+    D.setupResult.classList.add('show');
+    // 暂存推荐值
+    D.recKcal.dataset.value=rec;
+}
+
+// 性别/活动/目标选择器
+document.querySelectorAll('#genderToggle .gender-opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+        document.querySelectorAll('#genderToggle .gender-opt').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');profileGender=b.dataset.g;calcTDEE();
+    });
+});
+document.querySelectorAll('#activityChips .goal-chip').forEach(b=>{
+    b.addEventListener('click',()=>{
+        document.querySelectorAll('#activityChips .goal-chip').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');profileActivity=b.dataset.act;calcTDEE();
+    });
+});
+document.querySelectorAll('#goalChips .goal-chip').forEach(b=>{
+    b.addEventListener('click',()=>{
+        document.querySelectorAll('#goalChips .goal-chip').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');profileGoal=b.dataset.gl;calcTDEE();
+    });
+});
+[D.pfAge,D.pfHeight,D.pfWeight].forEach(el=>el.addEventListener('input',calcTDEE));
+
+$('saveProfileBtn').addEventListener('click',()=>{
+    const rec=parseInt(D.recKcal.dataset.value)||2000;
+    const p={gender:profileGender,age:parseInt(D.pfAge.value),height:parseInt(D.pfHeight.value),
+        weight:parseInt(D.pfWeight.value),activity:profileActivity,goal:profileGoal};
+    saveProfile(currUser,p);saveGoal(currUser,rec);
+    closeProfileModal();
+    renderAll();toast('每日目标已设为 '+rec+' kcal');
+});
+$('skipProfile').addEventListener('click',()=>{closeProfileModal();});
+$('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))closeProfileModal();});
 
 // ========== 初始化 ==========
 initUser();
