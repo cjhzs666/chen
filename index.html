@@ -80,6 +80,7 @@ body{
 .dashboard-row:active{transform:scale(.98)}
 .dash-ring{position:relative;width:90px;height:90px;flex-shrink:0}
 .dash-ring svg{transform:rotate(-90deg)}
+#ringProgress{transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .4s ease}
 .dash-ring-center{
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
@@ -1018,7 +1019,6 @@ function confirmAdd(){
     });
     addFreq(currUser,selFood.name);
     saveRec(currUser,records);
-    const mealLabel=MEALS.find(m=>m.key===meal);
     closeSheet();
     renderAll();toast('已添加 '+selFood.name+' · '+w+'g');
 }
@@ -1116,7 +1116,7 @@ function closeUserModal(){D.userModal.classList.add('hidden');}
 function renderUserModal(){D.userList.innerHTML=getUsers().map(n=>`<div class="user-item${n===currUser?' cur':''}" onclick="switchUser('${n}')"><span>${n}</span><div style="display:flex;align-items:center;gap:8px;">${n===currUser?'<span class="user-badge">当前</span>':''}<button class="user-del" onclick="event.stopPropagation();deleteUser('${n}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="3" width="12" height="10" rx="1"/><path d="M4 3V1.5h6V3"/></svg></button></div></div>`).join('');}
 function openGoalModal(){if(!getProfile(currUser)){openProfileModal();return;}D.goalModal.classList.remove('hidden');D.goalInput.value=getGoal(currUser);D.goalInput.focus();}
 function closeGoalModal(){D.goalModal.classList.add('hidden');}
-function saveGoal(){const g=parseInt(D.goalInput.value);if(!g||g<500||g>10000){toast('请输入500-10000之间的值');return;}saveGoal(currUser,g);closeGoalModal();renderToday();toast('每日目标已设为 '+g+' kcal');}
+function saveGoal(){const g=parseInt(D.goalInput.value);if(!g||g<500||g>10000){toast('请输入500-10000之间的值');return;}saveGoal(currUser,g);closeGoalModal();renderAll();toast('每日目标已设为 '+g+' kcal');}
 
 // ========== 事件 ==========
 $('navUserBtn').addEventListener('click',openUserModal);
