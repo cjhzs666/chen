@@ -95,8 +95,10 @@ body{
 .macro-fill.p{background:var(--protein)}
 .macro-fill.f{background:var(--fat)}
 .macro-fill.c{background:var(--carbs)}
-.macro-val{font-size:.8rem;font-weight:600;color:var(--text2);width:38px;text-align:right}
-.macro-pct{font-size:.75rem;color:var(--text3);width:28px;text-align:right}
+.macro-val{font-size:.8rem;font-weight:600;color:var(--text2);text-align:right;white-space:nowrap}
+.macro-goal{font-weight:400;color:var(--text3)}
+.macro-pct{font-size:.75rem;font-weight:600;color:var(--text2);width:32px;text-align:right}
+.macro-fill.over{background:var(--danger)!important}
 
 /* ========== 添加按钮 ========== */
 .add-btn{
@@ -712,19 +714,24 @@ function renderToday(){
     if(rem>0){D.ringRemaining.textContent='还差 '+Math.round(rem)+' kcal';D.ringRemaining.classList.remove('over');}
     else{D.ringRemaining.textContent='已超出 '+Math.round(-rem)+' kcal';D.ringRemaining.classList.add('over');}
 
-    // 营养素条 — 按热量（4-9-4 kcal/g）计算占比
-    const calP=tp*4, calF=tf_*9, calC=tc*4, calTotal=calP+calF+calC||1;
-    function mbar(cls,name,grams,cal){
-        const vp=Math.round((cal/calTotal)*100)||0;
-        const w=Math.max(vp,4);
+    // 营养素条 — 按每日目标显示进度
+    const goal=getGoal(currUser);
+    // 按标准饮食比例推算每日宏量目标：碳水55% 蛋白质18% 脂肪27%
+    const goalCarbs=Math.round(goal*0.55/4);
+    const goalProtein=Math.round(goal*0.18/4);
+    const goalFat=Math.round(goal*0.27/9);
+    function mbar(cls,name,grams,gTarget){
+        const pct=Math.min(Math.round((grams/gTarget)*100),150);
+        const w=Math.max(Math.min(pct,100),3);
         return`<div class="macro-row">
             <span class="macro-color ${cls}"></span><span class="macro-name">${name}</span>
             <div class="macro-track"><div class="macro-fill ${cls}" style="width:${w}%"></div></div>
-            <span class="macro-val">${grams.toFixed(1)}g</span><span class="macro-pct">${vp}%</span>
+            <span class="macro-val">${grams.toFixed(1)}<span class="macro-goal"> / ${gTarget}g</span></span>
+            <span class="macro-pct">${pct}%</span>
         </div>`;
     }
     if(tr.length>0){
-        D.macroBars.innerHTML=mbar('p','蛋白质',tp,calP)+mbar('f','脂肪',tf_,calF)+mbar('c','碳水',tc,calC);
+        D.macroBars.innerHTML=mbar('p','蛋白质',tp,goalProtein)+mbar('f','脂肪',tf_,goalFat)+mbar('c','碳水',tc,goalCarbs);
     }else{
         D.macroBars.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.85rem;">暂无数据</div>';
     }
