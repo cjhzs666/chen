@@ -712,19 +712,19 @@ function renderToday(){
     if(rem>0){D.ringRemaining.textContent='还差 '+Math.round(rem)+' kcal';D.ringRemaining.classList.remove('over');}
     else{D.ringRemaining.textContent='已超出 '+Math.round(-rem)+' kcal';D.ringRemaining.classList.add('over');}
 
-    // 营养素条
-    const total=tr.length?tp+tf_+tc:1;
-    function mbar(color,cls,name,val){
-        const vp=Math.round((val/total)*100)||0;
-        const w=Math.max((val/total)*100,3);
+    // 营养素条 — 按热量（4-9-4 kcal/g）计算占比
+    const calP=tp*4, calF=tf_*9, calC=tc*4, calTotal=calP+calF+calC||1;
+    function mbar(cls,name,grams,cal){
+        const vp=Math.round((cal/calTotal)*100)||0;
+        const w=Math.max(vp,4);
         return`<div class="macro-row">
             <span class="macro-color ${cls}"></span><span class="macro-name">${name}</span>
             <div class="macro-track"><div class="macro-fill ${cls}" style="width:${w}%"></div></div>
-            <span class="macro-val">${val.toFixed(1)}g</span><span class="macro-pct">${vp}%</span>
+            <span class="macro-val">${grams.toFixed(1)}g</span><span class="macro-pct">${vp}%</span>
         </div>`;
     }
     if(tr.length>0){
-        D.macroBars.innerHTML=mbar('protein','p','蛋白质',tp)+mbar('fat','f','脂肪',tf_)+mbar('carbs','c','碳水',tc);
+        D.macroBars.innerHTML=mbar('p','蛋白质',tp,calP)+mbar('f','脂肪',tf_,calF)+mbar('c','碳水',tc,calC);
     }else{
         D.macroBars.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.85rem;">暂无数据</div>';
     }
