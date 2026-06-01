@@ -154,6 +154,28 @@ body{
 }
 .float-add:active{transform:scale(.97);background:var(--primary-dark)}
 
+/* ========== 用户卡片 ========== */
+.card{background:var(--card);border-radius:var(--radius-sm);padding:16px;box-shadow:var(--shadow);margin-bottom:10px;animation:cardIn .5s ease backwards}
+.card-header{font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:8px}
+
+/* ========== 历史 ========== */
+.hist-empty{text-align:center;padding:40px;color:var(--text3);font-size:.95rem}
+.hist-day{background:var(--card);border-radius:var(--radius-sm);margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+.hist-day-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;transition:background .2s;user-select:none}
+.hist-day-hd:active{background:var(--fill)}
+.hist-date{font-weight:600;font-size:.92rem}
+.hist-sum{font-size:.82rem;color:var(--text2);display:flex;gap:12px;align-items:center}
+.hist-arrow{color:var(--text3);font-size:.65rem;transition:transform .2s}
+.hist-day.open .hist-arrow{transform:rotate(180deg)}
+.hist-day-bd{display:none;padding:0 16px 14px;border-top:.5px solid var(--sep)}
+.hist-day.open .hist-day-bd{display:block}
+.hist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:.5px solid var(--sep);font-size:.85rem}
+.hist-row:last-child{border-bottom:none}
+.hi-time{color:var(--text3);width:38px;font-size:.78rem}
+.hi-name{flex:1;font-weight:500}
+.hi-w{color:var(--text2);font-size:.78rem}
+.hi-k{font-weight:600;color:var(--kcal)}
+
 /* ========== 底部弹出面板 ========== */
 .sheet-overlay{
     position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.4);
