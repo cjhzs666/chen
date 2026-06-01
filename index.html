@@ -113,18 +113,36 @@ body{
 .food-list-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:20px}
 .fl-title{font-size:.8rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
 .fl-empty{text-align:center;padding:20px;color:var(--text3);font-size:.9rem}
-.fl-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--sep)}
-.fl-item:last-child{border-bottom:none}
-.fl-dot{width:8px;height:8px;border-radius:50%;background:var(--kcal);flex-shrink:0}
-.fl-info{flex:1;min-width:0}
-.fl-name{font-weight:600;font-size:.92rem}
-.fl-meta{font-size:.78rem;color:var(--text3)}
-.fl-kcal{font-weight:700;font-size:.95rem;color:var(--kcal);white-space:nowrap}
-.fl-del{
-    border:none;background:none;color:var(--text3);font-size:1rem;cursor:pointer;
-    padding:4px;transition:color .2s;width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+.fl-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:8px;
+    border-radius:var(--radius-sm);background:var(--card);box-shadow:var(--shadow);
+    border-left:4px solid var(--kcal);transition:all .2s;animation:flFadeIn .4s ease backwards;
 }
-.fl-del:hover{color:var(--danger)}
+.fl-item:nth-child(1){animation-delay:.05s}
+.fl-item:nth-child(2){animation-delay:.1s}
+.fl-item:nth-child(3){animation-delay:.15s}
+.fl-item:nth-child(4){animation-delay:.2s}
+.fl-item:nth-child(5){animation-delay:.25s}
+.fl-item:nth-child(6){animation-delay:.3s}
+.fl-item:nth-child(7){animation-delay:.35s}
+.fl-item:nth-child(8){animation-delay:.4s}
+.fl-item:active{transform:scale(.98)}
+.fl-item.protein-heavy{border-left-color:var(--protein)}
+.fl-item.fat-heavy{border-left-color:var(--fat)}
+.fl-item.carbs-heavy{border-left-color:var(--carbs)}
+@keyframes flFadeIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.fl-dot{display:none}
+.fl-info{flex:1;min-width:0}
+.fl-name{font-weight:700;font-size:.95rem;margin-bottom:2px}
+.fl-meta{font-size:.76rem;color:var(--text3)}
+.fl-kcal{font-weight:700;font-size:1.05rem;color:var(--text2);white-space:nowrap;text-align:right}
+.fl-kcal strong{color:var(--kcal);font-size:1.15rem}
+.fl-del{
+    border:none;background:none;color:var(--text3);font-size:.85rem;cursor:pointer;
+    padding:6px;transition:all .2s;width:28px;height:28px;display:flex;
+    align-items:center;justify-content:center;border-radius:50%;opacity:.5;
+}
+.fl-del:hover{color:var(--danger);opacity:1;background:rgba(255,59,48,.08)}
 
 /* ========== 历史 Tab ========== */
 .hist-header{text-align:center;padding:8px;color:var(--text2);font-size:.9rem;font-weight:600;margin-bottom:8px}
@@ -164,6 +182,20 @@ body{
     animation:slideUp .35s cubic-bezier(.32,.72,0,1);
 }
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+/* 环形图动画 */
+#ringProgress{transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .4s ease}
+/* 营养素条动画 */
+.macro-row{animation:macroIn .5s ease backwards}
+.macro-row:nth-child(1){animation-delay:.1s}
+.macro-row:nth-child(2){animation-delay:.2s}
+.macro-row:nth-child(3){animation-delay:.3s}
+@keyframes macroIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+/* 面板弹性动画 */
+.sheet-overlay .sheet{animation:slideUpSpring .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUpSpring{from{transform:translateY(100%)}to{transform:translateY(0)}}
+/* 卡片入场 */
+.card{animation:cardIn .5s ease backwards}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .sheet-handle{width:36px;height:5px;border-radius:3px;background:var(--sep);margin:12px auto 20px}
 .sheet-title{font-size:1.05rem;font-weight:700;text-align:center;margin-bottom:16px}
 
@@ -865,16 +897,25 @@ function renderToday(){
     if(tr.length>0){
         D.macroBars.innerHTML=mbar('p','蛋白质',tp,goalProtein)+mbar('f','脂肪',tf_,goalFat)+mbar('c','碳水',tc,goalCarbs);
     }else{
-        D.macroBars.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.85rem;">暂无数据</div>';
+        D.macroBars.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:.85rem;"><div style="font-size:1.5rem;margin-bottom:4px;">—</div>添加食物后自动分析</div>';
     }
 
     // 食物列表
-    D.todayFoodList.innerHTML=tr.length===0?'<div class="fl-empty">还没有记录</div>':
-        tr.map(r=>`<div class="fl-item">
-            <span class="fl-dot"></span><div class="fl-info"><div class="fl-name">${r.foodName}</div><div class="fl-meta">${r.time} · ${r.weight}g</div></div>
-            <span class="fl-kcal">${r.kcal} kcal</span>
-            <button class="fl-del" onclick="delRec('${r.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>
-        </div>`).join('');
+    D.todayFoodList.innerHTML=tr.length===0
+        ?'<div class="fl-empty" style="padding:30px;"><div style="font-size:2.5rem;margin-bottom:10px;">🍽️</div><div style="font-weight:600;color:var(--text);margin-bottom:4px;">还没有记录</div><div style="font-size:.82rem;">点击上方按钮添加今天的第一餐吧</div></div>'
+        :tr.map(r=>{
+            const food=FOOD_DB.find(f=>f.name===r.foodName);
+            const cat= food?food.category:'';
+            let heavy='';
+            if(r.protein>r.fat&&r.protein>r.carbs)heavy=' protein-heavy';
+            else if(r.fat*2>r.carbs&&r.fat*2>r.protein)heavy=' fat-heavy';
+            else heavy=' carbs-heavy';
+            return`<div class="fl-item${heavy}">
+                <div class="fl-info"><div class="fl-name">${r.foodName}</div><div class="fl-meta">${r.time} · ${r.weight}g${cat?' · '+cat:''}</div></div>
+                <span class="fl-kcal"><strong>${r.kcal}</strong> kcal</span>
+                <button class="fl-del" onclick="delRec('${r.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>
+            </div>`;
+        }).join('');
 
     // 设定目标按钮（点击环形图）
     D.ringProgress.parentElement.parentElement.style.cursor='pointer';
