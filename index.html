@@ -385,6 +385,7 @@ body{
             </div>
         </div>
         <div class="ring-remaining" id="ringRemaining"></div>
+        <div id="ringHint" style="text-align:center;font-size:.75rem;color:var(--text3);margin-top:2px;">点击圆环设定目标</div>
     </div>
 
     <div class="macro-bars" id="macroBars"></div>
@@ -974,6 +975,10 @@ $('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))c
 
 // ========== 初始化 ==========
 initUser();
+// 如果是全新用户（无记录、无评估），首次自动弹出身体评估
+if(currUser && !getProfile(currUser) && records.length===0){
+    setTimeout(()=>openProfileModal(),500);
+}
 </script>
 </body>
 </html>
