@@ -1159,10 +1159,12 @@ function saveProfileAndGoal(){
     const rec=parseInt($('saveProfileBtn').getAttribute('data-rec'))||2000;
     const p={gender:profileGender,age:age,height:height,weight:weight,activity:profileActivity,goal:profileGoal};
     saveProfile(currUser,p);
-    saveGoal(currUser,rec);
+    // 直接用最简单的写法写死，不经过任何封装函数
+    localStorage.setItem('nc2_goal_'+currUser, rec);
+    const after=localStorage.getItem('nc2_goal_'+currUser);
     closeProfileModal();
-    toast('每日目标已设为 '+rec+' kcal — 即将刷新');
-    setTimeout(()=>{location.reload();},600);
+    alert('评估推荐值='+rec+'\n写入后读取='+after+'\n当前用户='+currUser+'\n\n点确定后刷新页面');
+    location.reload();
 }
 
 // ========== 初始化 ==========
