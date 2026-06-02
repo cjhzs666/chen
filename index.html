@@ -1156,13 +1156,19 @@ function saveProfileAndGoal(){
     const age=parseInt(D.pfAge.value),height=parseInt(D.pfHeight.value),weight=parseInt(D.pfWeight.value);
     if(!age||!height||!weight){toast('请先填写完整的身体数据');return;}
     calcTDEE();
-    // 从按钮上直接读取 calcTDEE 写入的值
     const rec=parseInt($('saveProfileBtn').getAttribute('data-rec'))||2000;
     const p={gender:profileGender,age:age,height:height,weight:weight,activity:profileActivity,goal:profileGoal};
     saveProfile(currUser,p);
     saveGoal(currUser,rec);
     closeProfileModal();
-    renderAll();
+    // 多处强制写入，确保一定更新
+    D.ringTarget.textContent='/'+rec;
+    D.ringCurrent.textContent=0;
+    D.userGoalDisplay.textContent=rec;
+    setTimeout(()=>{D.ringTarget.textContent='/'+rec;D.userGoalDisplay.textContent=rec;},50);
+    setTimeout(()=>{D.ringTarget.textContent='/'+rec;D.userGoalDisplay.textContent=rec;},200);
+    renderToday();
+    renderHistoryMini();
     toast('每日目标已设为 '+rec+' kcal');
 }
 
