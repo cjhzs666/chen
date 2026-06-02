@@ -1155,15 +1155,21 @@ document.querySelectorAll('#goalChips .goal-chip').forEach(b=>{b.addEventListene
 $('saveProfileBtn').addEventListener('click',()=>{
     const age=parseInt(D.pfAge.value),height=parseInt(D.pfHeight.value),weight=parseInt(D.pfWeight.value);
     if(!age||!height||!weight){toast('请先填写完整的身体数据');return;}
-    // 强制重算确保 recommendedKcal 有效
     calcTDEE();
-    // 多重兜底获取推荐值
     let rec=recommendedKcal;
     if(!rec){rec=parseInt(D.recKcal.dataset.value);}
     if(!rec){rec=parseInt(D.recKcal.textContent);}
     if(!rec||rec<500)rec=2000;
     const p={gender:profileGender,age:age,height:height,weight:weight,activity:profileActivity,goal:profileGoal};
-    saveProfile(currUser,p);saveGoal(currUser,rec);closeProfileModal();renderAll();toast('每日目标已设为 '+rec+' kcal');
+    saveProfile(currUser,p);saveGoal(currUser,rec);
+    // 关弹窗前先拿 localStorage 里确认存进去的值
+    const confirmed=getGoal(currUser);
+    D.ringTarget.textContent='/'+confirmed;
+    D.userGoalDisplay.textContent=confirmed;
+    closeProfileModal();
+    renderToday();
+    renderHistoryMini();
+    toast('每日目标已设为 '+confirmed+' kcal');
 });
 $('skipProfile').addEventListener('click',()=>{closeProfileModal();});
 $('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))closeProfileModal();});
