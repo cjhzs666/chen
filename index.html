@@ -856,8 +856,7 @@ function getCurr(){return localStorage.getItem(SK+'curr')||''}
 function setCurr(n){localStorage.setItem(SK+'curr',n)}
 function getRec(u){try{return JSON.parse(localStorage.getItem(SK+'rec_'+u))||[]}catch{return[]}}
 function saveRec(u,r){localStorage.setItem(SK+'rec_'+u,JSON.stringify(r))}
-function getGoal(u){const g=parseInt(localStorage.getItem(SK+'goal_'+u));return(g&&g>0)?g:2000}
-function saveGoal(u,g){localStorage.setItem(SK+'goal_'+u,g)}
+
 function getProfile(u){try{return JSON.parse(localStorage.getItem(SK+'prof_'+u))||null}catch{return null}}
 function saveProfile(u,p){localStorage.setItem(SK+'prof_'+u,JSON.stringify(p))}
 function getFreq(u){try{return JSON.parse(localStorage.getItem(SK+'freq_'+u))||{}}catch{return{}}}
@@ -1027,12 +1026,12 @@ function confirmAdd(){
 function delRec(id){if(!confirm('删除这条记录？'))return;records=records.filter(r=>r.id!==id);saveRec(currUser,records);renderAll();}
 
 // ========== 渲染 ==========
-function renderAll(){renderToday();renderHistoryMini();if(currUser){D.userDisplayName.textContent=currUser;D.userAvatar.textContent=currUser[0].toUpperCase();D.userGoalDisplay.textContent=getGoal(currUser);}}
+function renderAll(){renderToday();renderHistoryMini();if(currUser){D.userDisplayName.textContent=currUser;D.userAvatar.textContent=currUser[0].toUpperCase();D.userGoalDisplay.textContent=(parseInt(localStorage.getItem('nc2_goal_'+currUser))||2000);}}
 
 function renderToday(){
     const td=today();
     const tr=records.filter(r=>r.date===td);
-    const goal=getGoal(currUser);
+    const goal=(parseInt(localStorage.getItem('nc2_goal_'+currUser))||2000);
     const tk=tr.reduce((s,r)=>s+r.kcal,0);
     const tp=tr.reduce((s,r)=>s+r.protein,0);
     const tf_=tr.reduce((s,r)=>s+r.fat,0);
@@ -1103,7 +1102,7 @@ function renderUserTab(){
     if(!currUser)return;
     D.userAvatar.textContent=currUser[0].toUpperCase();
     D.userDisplayName.textContent=currUser;
-    D.userGoalDisplay.textContent=getGoal(currUser);
+    D.userGoalDisplay.textContent=(parseInt(localStorage.getItem('nc2_goal_'+currUser))||2000);
     const p=getProfile(currUser);
     if(p){const actLabels={sedentary:'久坐不动',light:'轻度活动',moderate:'中度活动',active:'高度活动',very_active:'极高活动'};const goalLabels={lose:'减脂',maintain:'保持健康',gain:'增肌'};D.profileInfo.innerHTML=`<div style="display:flex;justify-content:center;gap:20px;margin-bottom:4px;"><span>${p.gender==='male'?'男':'女'} · ${p.age||'?'}岁</span><span>${p.height||'?'}cm · ${p.weight||'?'}kg</span></div><div style="text-align:center;color:var(--text3);font-size:.82rem;">${actLabels[p.activity]||''} · ${goalLabels[p.goal]||''}</div>`;}
     else{D.profileInfo.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);">未评估 · 点击下方开始</div>';}
@@ -1114,9 +1113,9 @@ function renderUserTab(){
 function openUserModal(){D.userModal.classList.remove('hidden');renderUserModal();D.newUserName.focus();}
 function closeUserModal(){D.userModal.classList.add('hidden');}
 function renderUserModal(){D.userList.innerHTML=getUsers().map(n=>`<div class="user-item${n===currUser?' cur':''}" onclick="switchUser('${n}')"><span>${n}</span><div style="display:flex;align-items:center;gap:8px;">${n===currUser?'<span class="user-badge">当前</span>':''}<button class="user-del" onclick="event.stopPropagation();deleteUser('${n}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="3" width="12" height="10" rx="1"/><path d="M4 3V1.5h6V3"/></svg></button></div></div>`).join('');}
-function openGoalModal(){if(!getProfile(currUser)){openProfileModal();return;}D.goalModal.classList.remove('hidden');D.goalInput.value=getGoal(currUser);D.goalInput.focus();}
+function openGoalModal(){if(!getProfile(currUser)){openProfileModal();return;}D.goalModal.classList.remove('hidden');D.goalInput.value=(parseInt(localStorage.getItem('nc2_goal_'+currUser))||2000);D.goalInput.focus();}
 function closeGoalModal(){D.goalModal.classList.add('hidden');}
-function saveGoal(){const g=parseInt(D.goalInput.value);if(!g||g<500||g>10000){toast('请输入500-10000之间的值');return;}saveGoal(currUser,g);closeGoalModal();renderAll();toast('每日目标已设为 '+g+' kcal');}
+function saveGoal(){const g=parseInt(D.goalInput.value);if(!g||g<500||g>10000){toast('请输入500-10000之间的值');return;}localStorage.setItem('nc2_goal_'+currUser,g);closeGoalModal();renderAll();toast('每日目标已设为 '+g+' kcal');}
 
 // ========== 事件 ==========
 $('navUserBtn').addEventListener('click',openUserModal);
