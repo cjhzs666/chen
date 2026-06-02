@@ -1161,15 +1161,8 @@ function saveProfileAndGoal(){
     saveProfile(currUser,p);
     saveGoal(currUser,rec);
     closeProfileModal();
-    // 多处强制写入，确保一定更新
-    D.ringTarget.textContent='/'+rec;
-    D.ringCurrent.textContent=0;
-    D.userGoalDisplay.textContent=rec;
-    setTimeout(()=>{D.ringTarget.textContent='/'+rec;D.userGoalDisplay.textContent=rec;},50);
-    setTimeout(()=>{D.ringTarget.textContent='/'+rec;D.userGoalDisplay.textContent=rec;},200);
-    renderToday();
-    renderHistoryMini();
-    toast('每日目标已设为 '+rec+' kcal');
+    toast('每日目标已设为 '+rec+' kcal — 即将刷新');
+    setTimeout(()=>{location.reload();},600);
 }
 
 // ========== 初始化 ==========
