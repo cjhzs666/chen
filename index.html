@@ -623,7 +623,7 @@ body{
 </div>
 
 <!-- ========== 身体评估弹窗 ========== -->
-<div id="profileModal" class="modal-overlay hidden">
+<div id="profileModal" class="modal-overlay hidden" onclick="if(event.target===this)closeProfileModal()">
     <div class="modal-sheet">
         <div class="handle"></div>
         <h3>身体评估</h3>
@@ -668,8 +668,8 @@ body{
             <div class="rec-detail" id="recDetail"></div>
         </div>
 
-        <button class="btn btn-primary" id="saveProfileBtn">保存并开始使用</button>
-        <div class="skip-link" id="skipProfile">跳过，使用默认值</div>
+        <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfileAndGoal()">保存并开始使用</button>
+        <div class="skip-link" id="skipProfile" onclick="closeProfileModal()">跳过，使用默认值</div>
     </div>
 </div>
 
@@ -1152,7 +1152,7 @@ document.querySelectorAll('#genderToggle .gender-opt').forEach(b=>{b.addEventLis
 document.querySelectorAll('#activityChips .goal-chip').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('#activityChips .goal-chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');profileActivity=b.dataset.act;calcTDEE();});});
 document.querySelectorAll('#goalChips .goal-chip').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('#goalChips .goal-chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');profileGoal=b.dataset.gl;calcTDEE();});});
 [D.pfAge,D.pfHeight,D.pfWeight].forEach(el=>el.addEventListener('input',calcTDEE));
-$('saveProfileBtn').addEventListener('click',()=>{
+function saveProfileAndGoal(){
     const age=parseInt(D.pfAge.value),height=parseInt(D.pfHeight.value),weight=parseInt(D.pfWeight.value);
     if(!age||!height||!weight){toast('请先填写完整的身体数据');return;}
     calcTDEE();
@@ -1162,7 +1162,6 @@ $('saveProfileBtn').addEventListener('click',()=>{
     if(!rec||rec<500)rec=2000;
     const p={gender:profileGender,age:age,height:height,weight:weight,activity:profileActivity,goal:profileGoal};
     saveProfile(currUser,p);saveGoal(currUser,rec);
-    // 关弹窗前先拿 localStorage 里确认存进去的值
     const confirmed=getGoal(currUser);
     D.ringTarget.textContent='/'+confirmed;
     D.userGoalDisplay.textContent=confirmed;
@@ -1170,9 +1169,7 @@ $('saveProfileBtn').addEventListener('click',()=>{
     renderToday();
     renderHistoryMini();
     toast('每日目标已设为 '+confirmed+' kcal');
-});
-$('skipProfile').addEventListener('click',()=>{closeProfileModal();});
-$('profileModal').addEventListener('click',e=>{if(e.target===$('profileModal'))closeProfileModal();});
+}
 
 // ========== 初始化 ==========
 initUser();
