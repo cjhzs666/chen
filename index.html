@@ -1156,19 +1156,14 @@ function saveProfileAndGoal(){
     const age=parseInt(D.pfAge.value),height=parseInt(D.pfHeight.value),weight=parseInt(D.pfWeight.value);
     if(!age||!height||!weight){toast('请先填写完整的身体数据');return;}
     calcTDEE();
-    let rec=recommendedKcal;
-    if(!rec){rec=parseInt(D.recKcal.dataset.value);}
-    if(!rec){rec=parseInt(D.recKcal.textContent);}
-    if(!rec||rec<500)rec=2000;
+    // 直接从页面上你看到的绿色数字读取
+    const rec=parseInt(D.recKcal.textContent)||2000;
     const p={gender:profileGender,age:age,height:height,weight:weight,activity:profileActivity,goal:profileGoal};
-    saveProfile(currUser,p);saveGoal(currUser,rec);
-    const confirmed=getGoal(currUser);
-    D.ringTarget.textContent='/'+confirmed;
-    D.userGoalDisplay.textContent=confirmed;
+    saveProfile(currUser,p);
+    saveGoal(currUser,rec);
     closeProfileModal();
-    renderToday();
-    renderHistoryMini();
-    toast('每日目标已设为 '+confirmed+' kcal');
+    renderAll();
+    toast('每日目标已设为 '+rec+' kcal');
 }
 
 // ========== 初始化 ==========
